@@ -1,0 +1,299 @@
+finalgame
+	Main:
+		private boolean game, quit
+		private Thread mThread
+		private GuiFrame menu
+		private ButtonListener listener, quitListener
+		public static Texture gf
+		private Texture backgroundTexture
+		private SoundSystem soundSystem
+		private NotificationSystem notifications
+		public static UnicodeFont gameFont, titleFont
+		public static int messageHeight, titleHeight
+		public Main()
+		private initDisplay()
+		private initGL()
+		private loadResources()
+		private initGeneral()
+		private initSoundSystem()
+		public init()
+		public buttonClicked(GuiButton btn)
+		public update()
+		public render()
+		public run()
+		public quit()
+		public setQuitListener(ButtonListener listener)
+		public start()
+		public stop()
+		public static main(String[] args)
+	ResourceLoader:
+		public static InputStream getResourceAsStream(String path, boolean relative)
+		public static File getResourceFile(String path, boolean relative)
+		public static String getAbsolutePath(String relativePath)
+	Util:
+		private static File workdir
+		public enum OS
+		public static OS getOS()
+		public static File getWorkingDir()
+		public static File getWorkingDir(String appname)
+
+finalgame.Engine
+	Constants:
+		public static final int SLEEP_TIME
+		public static final int EVENT_BTN_CLICK
+		public static final int MAX_TEXT_LEN
+	Monster ( extends Renderable )
+	Player ( extends Renderable )
+	Moves <Interface>
+		public void use(Pokemon attacker, Pokemon attacked)
+	All other moves implement Moves
+       list of moves: fire blast, water blast, solar beam, rock throw, thunderbolt,
+           fire: fire blast, ember, conflagration 
+           water: water blast, water gun, tidal wave
+           grass: solar beam, leaf blade, leaf storm
+           rock: rock throw, earthquake, rock slide
+           electric: thunderbolt, thunder, spark
+           normal: headbutt, quick attack, scratch, bite, uppercut 
+           
+		private double power (if required)
+		private int type (if required)
+		public void use(Pokemon attacker, Pokemon attacked)
+	Pokemon <Abstract>
+		protected String givenname
+		protected int type
+		protected int experience
+		protected int level
+		protected Boolean hasLeveled
+		protected double[] growths
+		protected double[] stats
+		protected Moves[] abilities
+		public Pokemon(int lev)
+    public Pokemon clone()
+    public Pokemon gethealth()
+		public abstract Boolean canEvolve()
+		public void addExp(int exp)
+		private void levelUp()
+    public void setNick(String n)
+    public Boolean removeHP(int amountRemoved)
+      ^returns true if Pokemon faints, false if otherwise
+    public int getHP()
+    public int getAttack()
+    public int getDefense()
+    public int getSpAttack()
+    public int getSpDefense()
+    public int getSpeed()
+	All other pokemon extend Pokemon
+	Trainer
+		private Pokemon[] pokemon
+		private int activePokemon
+		public Trainer()
+		public void switchPokemon(int newactive)
+		public void addPokemon(Pokemon newpokemon)
+	Battle
+		private Trainer player, opponent
+		private Pokemon playerPokemon, opposingPokemon
+		public Battle(Trainer trainerP, Trainer trainerO)
+		public Battle(Trainer trainerP, Pokemon opposingPokemon)
+
+finalgame.Engine.Utilities
+	ButtonListener: ( Interface )
+		public doCallback()
+		public doCallback(Object caller)
+		public doCallback(Object caller, int eventCode)
+	Utilities:
+		Square:
+			private Location topLeft, bottomRight
+			public Square(Location tl, Location br)
+			public Square(double c1, double c2, double c3, double c4, boolean allcoords)
+			public double x1()
+			public double x2()
+			public double y1()
+			public double y2()
+			public Location topleft()
+			public Location bottomright()
+			public Location center()
+			public double width()
+			public double height()
+		public static Location getRenderOffset(Location myLoc, Location otherLoc, int radius, int blocksize)
+		public static int getStringWidth(String text)
+
+finalgame.GUI
+	GuiButton: ( extends GuiElement )
+		private String text
+		private Texture f
+		private float[] defaultColor, overColor, clickColor
+		private byte stare
+		private ButtonListener cb
+		public GuiButton(int x, int y, String t, Texture font, ButtonListener cb, GuiElement superior)
+		public GuiButton(int x, int y, String t, Texture font, ButtonListener cb, GuiElement superior, String id)
+		public setText(String s)
+		public String getText()
+	GuiElement: ( Abstract )
+		protected int x
+		protected int y
+		protected int width
+		protected int height
+		protected boolean visible
+		protected GuiElement superior
+		protected String id
+		public GuiElement(int x2, int y2, int width2, int height2)
+		public GuiElement(int x2, int y2, int width2, int height2, String id)
+		public int[] getLocation()
+		public int[] getCenter()
+		public void setVisible(boolean visibility)
+		public abstract draw()
+		public abstract update()
+		public drawText()
+		public drawBox()
+		public handleTextInput(char c, int i)
+		public requestFocus(GuiElement f)
+		public boolean shouldHaveFocus()
+		public setX(int x)
+		public setY(int y)
+		public String getID()
+	GuiFrame: ( extends GuiElement )
+		private LinkedList<GuiElement> elements
+		private LinkedList<String> keys
+		private float[] background
+		private boolean drawbg
+		private String focus
+		private Random r
+		private boolean hasCallback
+		private ButtonListener cb
+		public GuiFrame(int x2, int y2, int width2, int height2)
+		public requestFocus(GuiElement f)
+		public clearFocus()
+		public handleTextInput()
+		public delegateTextInput(char c, int i)
+		public GuiElement getElement(int index)
+		public GuiElement getElement(String id)
+		public String getID(GuiElement e)
+		public setListener(ButtonListener cb)
+		public boolean add(String id, GuiElement e)
+		public boolean addLabel(int x, int y, String t, Texture font)
+		public boolean addButton(int x, int y, String t, Texture font)
+		public boolean addTextField(int x, int y, Texture font)
+		public boolean addLabel(String id, int x, int y, String t, Texture font)
+		public boolean addButton(String id, int x, int y, String t, Texture font)
+		public boolean addTextField(String id, int x, int y, Texture font)
+		public boolean addTextField(int x, int y, Texture font, String id)
+		public boolean hasFocus(GuiElement e)
+	GuiLabel: ( extends GuiElement )
+		private String text
+		private Texture f
+		public GuiLabel(int x, int y, String t, Texture font, GuiElement superior)
+		public GuiLabel(int x, int y, String t, Texture font, GuiElement superior, String id)
+		public GuiLabel(int x, int y, String t, Texture font)
+		public GuiLabel(int x, int y, String t, Texture font, String id)
+		public setText(String s)
+		public String getText()
+	GuiTextField: ( extends GuiElement )
+		private String text
+		private Texture f
+		public GuiTextField(int x, int y, Texture font, ButtonListener cb, GuiElement superior)
+		public GuiTextField(int x, int y, Texture font, ButtonListener cb, GuiElement superior, String id)
+		public setText(String s)
+		public String getText()
+		public boolean shouldHaveFocus()
+		public handleTextInput(char c, int i)
+	Notification: ( extends GuiElement )
+		private String[] msg
+		private String disp
+		private int index
+		private int height
+		private UnicodeFont mf
+		private String speaker
+		private static final int LINE_SPACING
+		private static final int X_PADDING
+		private static final int Y_PADDING
+		public Notification(int x, int y, String msg, String speaker, UnicodeFont font)
+		public Notification(int x, int y, String msg, UnicodeFont font)
+		public setSpeaker(String speaker)
+		public boolean advance()
+		public boolean reverse()
+	NotificationSystem: ( extends GuiElement )
+		private boolean a_down
+		private boolean b_down
+		private Queue<Notification> notifications
+		public NotificationSystem(String id)
+		public boolean hasNotifications()
+		public addNotification(String notification)
+		public addNotification(String notification, String speaker)
+
+finalgame.Graphics
+	GraphicsConstants:
+		public static final int LETTER_SIZE
+		public static final int HEIGHT
+		public static final int WIDTH
+		public static final int FRAMERATE
+	Location:
+		private double _x
+		private double _y
+		private double _rot
+		private int _z
+		public Location(double x, double y, double rot, int z)
+		public Location(double x, double y, double rot)
+		public Location(double x, double y)
+		public Location(Location other)
+		public double x()
+		public double y()
+		public double rot()
+		public int z()
+		public x(double x)
+		public y(double y)
+		public rot(double rot)
+		public z(int z)
+	RenderEngine:
+		private Map<String, Renderable> renderObj
+		private Map<String, Texture> sprites
+		public RenderEngine()
+		public register(Renderable r)
+		public forget(String rid)
+		public render()
+		public Texture getSprite(String name)
+		public registerSprite(String name, Texture tex)
+		public registerSpriteSheet(String baseName, String[] names, Texture tex, int tw, int th)
+		public forgetSprite(String name)
+	Render2D:
+		public static toggle2dMode(int width, int height)
+		public static double[] getLetter(String c, Texture font)
+		public static renderString(double x, double y, String message, Texture font)
+		public static drawSquare(double x, double y, int side, float[] color)
+		public static drawSquare(double x, double y, int side, float[] color, boolean centered)
+		public static drawSquare(double x, double y, double rot, int side, float[] color)
+		public static drawSquare(Location l, int side, float[] color)
+		public static drawRect(Location l, int width, int height, float[] color, boolean centered)
+		public static drawTex(double x, double y, Texture tex)
+		public static drawTex(double x, double y, double rot, double cX, double cY, Texture tex)
+		public static drawTex(double x, double y, double width, double height, Texture tex)
+		public static drawTex(double x, double y, double width, double height, double rot, double cX, double cY, Texture tex)
+		public static drawBg(Texture tex)
+	RenderUtil:
+		public static toggle2dMode(int width, int height)
+		public static ArrayList<Texture> getSprites(Texture tex, int tw, int th)
+	Renderable: ( Abstract )
+		private Location myLoc
+		protected String renderID
+		protected String name
+		public Renderable()
+		public Location getLocation()
+		public abstract render()
+		public String getFront()
+		public String getBack()
+		public String getOther(String c)
+	ScreenShot:
+		public BufferedImage takeScreenShot()
+		public screenShot(String file)
+
+finalgame.Resources
+	ThreadedResourceDownloader: ( extends Thread )
+		private MessageDigest md
+		private static DocumentBuilderFactory factory
+		private final String baseURL
+		private DocumentBuilder builder
+		public boolean finished
+		public ThreadedResourceDownloader()
+		private boolean downloadResource(String path)
+		private String getTagValue(String sTag, Element eElement)
+		private static String byteArray2Hex(byte[] hash)
+	

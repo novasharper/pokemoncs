@@ -1,242 +1,169 @@
 package finalgame;
 
-import finalgame.Engine.Utilities.ButtonListener;
-import finalgame.GUI.GuiButton;
-import finalgame.GUI.GuiFrame;
+import finalgame.GUI.battle.BattleScreen;
 import finalgame.Graphics.GraphicsConstants;
-import finalgame.Graphics.Render2D;
-import finalgame.Graphics.RenderUtil;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-import static org.lwjgl.opengl.GL11.*;
-import org.lwjgl.util.glu.GLU;
-import org.newdawn.slick.opengl.Texture;
-import org.newdawn.slick.opengl.TextureLoader;
 
-public class Main implements Runnable {
+import java.applet.Applet;
+import java.awt.Canvas;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Toolkit;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 
-	private boolean game, quit;
-	private Thread mThread;
-	private GuiFrame menu;
-	private ButtonListener listener, quitListener;
-	private Texture gameFont;
-	private Texture backgroundTexture;
+import org.reflections.Reflections;
 
-	public Main() {
-		mThread = null;
-		game = true;
-	}
+public class Main extends JFrame {
+	private static final long serialVersionUID = 4193394252292999582L;
+	private Canvas game;
+	private Main main;
+	private JButton go;
+	private JButtonListener listener;
+	private Method stop, start;
 
-	private void initDisplay() {
+	public Main(String title) {
+		super(title);
 		try {
-			Display.setDisplayMode(new DisplayMode(GraphicsConstants.WIDTH,
-					GraphicsConstants.HEIGHT));
-			Display.setTitle("PokemonCS");
-			try {
-				Display.create();
-			} catch (LWJGLException e) {
-				try {
-					Thread.sleep(1000L);
-				} catch (InterruptedException ie) {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (InstantiationException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (IllegalAccessException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (UnsupportedLookAndFeelException ex) {
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		// Listener, will be used by the launch button
+		listener = new JButtonListener(this);
+
+		// Set custom window icon
+		setIconImage(Toolkit.getDefaultToolkit().getImage(
+				Main.class.getResource("tallgrass.png")));
+
+		// Set layout so that button will be centered
+		setLayout(new FlowLayout(FlowLayout.CENTER, 0,
+				(GraphicsConstants.HEIGHT - 50) / 2));
+
+		// Add launch button
+		go = new JButton("Launch");
+		go.addActionListener(this.listener);
+		add(go);
+
+		// Allow for game to successfully exit (prevents it from freezing)
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+		// These are used for reflection b/c Canvas does not contain the start
+		// or stop methods
+		try {
+			stop = Class.forName("finalgame.Game").getMethod("stop", null);
+			start = Class.forName("finalgame.Game").getMethod("start", null);
+		} catch (NoSuchMethodException e1) {
+			e1.printStackTrace();
+		} catch (SecurityException e1) {
+			e1.printStackTrace();
+		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+		// Listen for window closing
+		addWindowListener(new WindowListener() {
+
+			public void windowClosing(WindowEvent e) {
+				if (game != null) {
+					try { // Try to stop game if it is instantiated
+						stop.invoke(game, null);
+					} catch (IllegalAccessException e1) {
+						e1.printStackTrace();
+						System.exit(0);
+					} catch (IllegalArgumentException e1) {
+						e1.printStackTrace();
+						System.exit(0);
+					} catch (InvocationTargetException e1) {
+						e1.printStackTrace();
+						System.exit(0);
+					}
+				} else { // Exit otherwise
+					System.exit(0);
 				}
-				Display.create();
 			}
-		} catch (LWJGLException e) {
-			e.printStackTrace();
-		}
+
+			public void windowClosed(WindowEvent e) {
+			}
+
+			public void windowOpened(WindowEvent e) {
+			}
+
+			public void windowIconified(WindowEvent e) {
+			}
+
+			public void windowDeiconified(WindowEvent e) {
+			}
+
+			public void windowActivated(WindowEvent e) {
+			}
+
+			public void windowDeactivated(WindowEvent e) {
+			}
+		});
+
+		// Update title
+		setTitle("PokemonCS");
+		setSize(GraphicsConstants.WIDTH + getInsets().left + getInsets().right,
+				GraphicsConstants.HEIGHT + getInsets().top + getInsets().bottom);
+		setResizable(false);
 	}
 
-	private void initGL() {
-		glEnable(GL_TEXTURE_2D);	// Enable Texture Mapping
-		glShadeModel(GL_SMOOTH);	// Enable Smooth Shading
-		glClearColor(0, 0, 0, 1);	// Black Background
+	private void launchApplet() {
+		setLayout(null); // Reset the layout so the game adds correctly
+		add(game); // Add the game to the form
+		game.setSize(GraphicsConstants.WIDTH, GraphicsConstants.HEIGHT);
+		setTitle("PokemonCS");
 
-		// Enable alpha
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glViewport(0, 0, GraphicsConstants.WIDTH, GraphicsConstants.HEIGHT);
-		glMatrixMode(GL_MODELVIEW);
-
-		glClearDepth(1.0);
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-
-		GLU.gluOrtho2D(0, GraphicsConstants.WIDTH, GraphicsConstants.HEIGHT, 0);
-		glMatrixMode(GL_MODELVIEW);
-
-		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	}
-
-	private void loadResources() {
 		try {
-			gameFont = TextureLoader.getTexture(
-					"PNG",
-					ResourceLoader.getResourceAsStream(
-					"resources/image/font/alpha.png", true));
-			backgroundTexture = TextureLoader.getTexture(
-					"PNG",
-					ResourceLoader.getResourceAsStream(
-					"resources/image/background/background.png", true));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void initGeneral() {
-		// init callbacks
-		listener = new ButtonListener() {
-
-			public void doCallback() {
-			}
-
-			public void doCallback(Object caller) {
-				buttonClicked((GuiButton) caller);
-			}
-
-			public void doCallback(Object caller, int eventCode) {
-			}
-		};
-		menu = new GuiFrame(0, 0, GraphicsConstants.WIDTH, GraphicsConstants.HEIGHT);
-		menu.setListener(listener);
-		menu.addButton("start", 100, 100, "Start", gameFont);
-		menu.addButton("exit", 100, 140, "Exit", gameFont);
-		menu.addLabel(10, 10, "PokemonCS", gameFont);
-	}
-
-	private void initSoundSystem() {
-	}
-
-	/**
-	 * Init
-	 */
-	public void init() {
-		initDisplay();
-		initGL();
-		loadResources();
-		initGeneral();
-		initSoundSystem();
-	}
-
-	/**
-	 * Button clicked callback
-	 */
-	public void buttonClicked(GuiButton btn) {
-		// Get the button ID
-		String name = menu.getID(btn);
-		// No button
-		if (name == null) {
-			return;
-		}
-		// The start button
-		if (name.equals("start")) {
-			game = true;
-			menu.clearFocus();
-		} else { // The quit button
-			quit = true;
+			start.invoke(game, null);
+		} catch (IllegalAccessException e1) {
+			e1.printStackTrace();
+			System.exit(0);
+		} catch (IllegalArgumentException e1) {
+			e1.printStackTrace();
+			System.exit(0);
+		} catch (InvocationTargetException e1) {
+			e1.printStackTrace();
+			System.exit(0);
 		}
 	}
 
 	/**
-	 * Update the game
+	 * Hand go button click.
 	 */
-	public void update() {
-	}
-
-	/**
-	 * Render the game
-	 */
-	public void render() {
-	}
-
-	/**
-	 * Main thread
-	 */
-	public void run() {
-		init();
-		while (!(Display.isCloseRequested() || quit)) {
-			glClear(GL_COLOR_BUFFER_BIT);
-			if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
-				game = false;
-				RenderUtil.toggle2dMode(GraphicsConstants.WIDTH, GraphicsConstants.HEIGHT);
-				for (; Keyboard.next();) ;
+	public void buttonClicked(JButton buttonObj) {
+		if (buttonObj == go) {
+			try {
+				buttonObj.setVisible(false);
+				game = (Canvas) Class.forName("finalgame.Game").newInstance();
+				launchApplet();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			Render2D.drawBg(backgroundTexture);
-			if (game) { // Update Game
-				update();
-			} else { // Update Menu
-				menu.update();
-			}
-			render();
-			if (!game) { // Draw menu over game
-				menu.draw();
-			}
-			Display.update();
-			Display.sync(GraphicsConstants.FRAMERATE);
-		}
-		Display.destroy();
-		if (quitListener != null) {
-			quitListener.doCallback();
-		}
-		System.exit(0);
-	}
-
-	/**
-	 * ***********************************************************************
-	 */
-	/*
-	 * THREADING STUFF
-	 */
-	/**
-	 * ***********************************************************************
-	 */
-	/**
-	 * Quit
-	 */
-	public void quit() {
-		quit = true;
-	}
-
-	/**
-	 * Set callback for cleaning up any additional stuff
-	 */
-	public void setQuitListener(ButtonListener listener) {
-		quitListener = listener;
-	}
-
-	/**
-	 * Start the thread
-	 */
-	public void start() {
-		if (mThread != null) {
-			return;
-		} else {
-			mThread = new Thread(this, "main-thread");
-			mThread.start();
 		}
 	}
 
-	/**
-	 * Stop the thread
-	 */
-	public void stop() {
-		this.quit();
-	}
-
-	/**
-	 * ***********************************************************************
-	 */
-	/*
-	 * Main Entry point
-	 */
-	/**
-	 * ***********************************************************************
-	 */
 	public static void main(String[] args) {
-		Main main = new Main();
-		main.start();
+		Main m = new Main("PokemonCS Launcher");
+		m.setVisible(true);
 	}
 }

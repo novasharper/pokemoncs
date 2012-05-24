@@ -9,9 +9,10 @@ import org.lwjgl.input.*;
 import org.newdawn.slick.opengl.Texture;
 
 import finalgame.Engine.Utilities.*;
+import finalgame.Graphics.RenderObj;
 
 @SuppressWarnings("unused")
-public class GuiFrame extends GuiElement {
+public class GuiFrame extends GuiElement implements RenderObj {
 
 	private LinkedList<GuiElement> elements;
 	private LinkedList<String> keys;
@@ -19,7 +20,7 @@ public class GuiFrame extends GuiElement {
 	private boolean drawbg;
 	private String focus = "";
 	private Random r;
-	private boolean hasCallback = false;
+	private boolean hasCallback;
 	private ButtonListener cb;
 
 	public GuiFrame(int x2, int y2, int width2, int height2) {
@@ -27,6 +28,7 @@ public class GuiFrame extends GuiElement {
 		elements = new LinkedList<GuiElement>();
 		keys = new LinkedList<String>();
 		r = new Random();
+		hasCallback = false;
 	}
 
 	public void update() {
@@ -54,9 +56,12 @@ public class GuiFrame extends GuiElement {
 
 	public void handleTextInput() {
 		if (focus == null) {
-			for (; Keyboard.next(););
+			for (; Keyboard.next();)
+				;
 		}
-		for (; Keyboard.next(); delegateTextInput(Keyboard.getEventCharacter(), Keyboard.getEventKey()));
+		for (; Keyboard.next(); delegateTextInput(Keyboard.getEventCharacter(),
+				Keyboard.getEventKey()))
+			;
 	}
 
 	public void delegateTextInput(char c, int i) {
@@ -71,7 +76,8 @@ public class GuiFrame extends GuiElement {
 		if (visible) {
 			LinkedList<GuiElement> later = new LinkedList<GuiElement>();
 			for (GuiElement e : elements) {
-				if (e instanceof GuiButton || e instanceof GuiLabel || e instanceof GuiTextField) {
+				if (e instanceof GuiButton || e instanceof GuiLabel
+						|| e instanceof GuiTextField) {
 					later.add(e);
 				} else {
 					e.draw();
@@ -86,6 +92,10 @@ public class GuiFrame extends GuiElement {
 				e.drawText();
 			}
 		}
+	}
+	
+	public void render() {
+		draw();
 	}
 
 	public GuiElement getElement(int index) {
@@ -124,6 +134,8 @@ public class GuiFrame extends GuiElement {
 
 	public boolean addLabel(int x, int y, String t, Texture font) {
 		int rand = r.nextInt(9999) + 10000;
+		while (keys.contains("" + rand))
+			rand = r.nextInt(9999) + 10000;
 		GuiLabel label = new GuiLabel(x, y, t, font, this, "" + rand);
 		boolean succeeded = add("" + rand, label);
 		return succeeded;
@@ -141,8 +153,15 @@ public class GuiFrame extends GuiElement {
 
 	public boolean addTextField(int x, int y, Texture font) {
 		int rand = r.nextInt(9999) + 10000;
-		GuiTextField textField = new GuiTextField(x, y, font, cb, this, "" + rand);
+		GuiTextField textField = new GuiTextField(x, y, font, cb, this, ""
+				+ rand);
 		boolean succeeded = add("" + rand, textField);
+		return succeeded;
+	}
+
+	public boolean addTextField(int x, int y, Texture font, String id) {
+		GuiTextField textField = new GuiTextField(x, y, font, cb, this, id);
+		boolean succeeded = add(id, textField);
 		return succeeded;
 	}
 

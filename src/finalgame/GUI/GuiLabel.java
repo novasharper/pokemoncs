@@ -18,55 +18,58 @@ import finalgame.Graphics.*;
 public class GuiLabel extends GuiElement {
 	private String text;
 	private Texture f;
-	
+
 	public GuiLabel(int x, int y, String t, Texture font, GuiElement superior) {
-		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_WIDTH);
+		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_SIZE);
 		this.text = t;
 		this.f = font;
 		this.superior = superior;
 	}
-	
-	public GuiLabel(int x, int y, String t, Texture font, GuiElement superior, String id) {
-		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_WIDTH, id);
+
+	public GuiLabel(int x, int y, String t, Texture font, GuiElement superior,
+			String id) {
+		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_SIZE,
+				id);
 		this.text = t;
 		this.f = font;
 		this.superior = superior;
 	}
-	
+
 	public GuiLabel(int x, int y, String t, Texture font) {
-		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_WIDTH);
+		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_SIZE);
 		this.text = t;
 		this.f = font;
 		this.superior = null;
 	}
-	
+
 	public GuiLabel(int x, int y, String t, Texture font, String id) {
-		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_WIDTH, id);
+		super(x, y, Utilities.getStringWidth(t), GraphicsConstants.LETTER_SIZE,
+				id);
 		this.text = t;
 		this.f = font;
 		this.superior = null;
 	}
-	
+
 	public void setText(String s) {
-		this.width = s.length() * GraphicsConstants.LETTER_WIDTH;
-		this.height = GraphicsConstants.LETTER_WIDTH;
+		this.width = s.length() * GraphicsConstants.LETTER_SIZE;
+		this.height = GraphicsConstants.LETTER_SIZE;
 		this.text = s;
 	}
-	
+
 	public String getText() {
 		return this.text;
 	}
-	
+
 	public void draw() {
-		if(visible) {
-			Render2D.renderString(x, y, text, f);	
+		if (visible) {
+			Render2D.renderString(x, y, text, f);
 		}
 	}
-	
+
 	public void drawText() {
 		draw();
 	}
-	
+
 	public void update() {
 	}
 }
